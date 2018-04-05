@@ -688,6 +688,21 @@ NK_API void nk_input_unicode(struct nk_context*, nk_rune);
 /// __ctx__     | Must point to a previously initialized `nk_context` struct
 */
 NK_API void nk_input_end(struct nk_context*);
+/*/// #### nk_input_set_lock
+/// Sets the input lock. If the input lock is set, all windows will be
+/// treated as if they have NK_WINDOW_NO_INPUT set, and more generally,
+/// the mouse will be treated as if it is over no windows. ///
+///
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
+/// void nk_input_set_lock(struct nk_context *ctx, int lock);
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+///
+/// Parameter   | Description
+/// ------------|-----------------------------------------------------------
+/// __ctx__     | Must point to a previously initialized `nk_context` struct
+/// __lock__    | The new state of the input lock: 0 for unlocked, 1 for locked
+*/
+NK_API void nk_input_set_lock(struct nk_context*, int lock);
 /* =============================================================================
  *
  *                                  DRAWING
@@ -5269,6 +5284,9 @@ struct nk_context {
 #ifdef NK_INCLUDE_COMMAND_USERDATA
     nk_handle userdata;
 #endif
+
+    int input_lock;
+
     /* text editor objects are quite big because of an internal
      * undo/redo stack. Therefore it does not make sense to have one for
      * each window for temporary use cases, so I only provide *one* instance

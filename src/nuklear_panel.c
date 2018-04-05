@@ -112,7 +112,7 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
     win = ctx->current;
     layout = win->layout;
     out = &win->buffer;
-    in = (win->flags & NK_WINDOW_NO_INPUT) ? 0: &ctx->input;
+    in = (win->flags & NK_WINDOW_NO_INPUT || ctx->input_lock != 0) ? 0: &ctx->input;
 #ifdef NK_INCLUDE_COMMAND_USERDATA
     win->buffer.userdata = ctx->userdata;
 #endif
@@ -326,7 +326,7 @@ nk_panel_end(struct nk_context *ctx)
     layout = window->layout;
     style = &ctx->style;
     out = &window->buffer;
-    in = (layout->flags & NK_WINDOW_ROM || layout->flags & NK_WINDOW_NO_INPUT) ? 0 :&ctx->input;
+    in = (layout->flags & NK_WINDOW_ROM || layout->flags & NK_WINDOW_NO_INPUT || ctx->input_lock != 0) ? 0 :&ctx->input;
     if (!nk_panel_is_sub(layout->type))
         nk_push_scissor(out, nk_null_rect);
 

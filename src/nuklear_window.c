@@ -209,7 +209,7 @@ nk_begin_titled(struct nk_context *ctx, const char *name, const char *title,
     } else nk_start(ctx, win);
 
     /* window overlapping */
-    if (!(win->flags & NK_WINDOW_HIDDEN) && !(win->flags & NK_WINDOW_NO_INPUT))
+    if (!(win->flags & NK_WINDOW_HIDDEN) && !(win->flags & NK_WINDOW_NO_INPUT) && (ctx->input_lock == 0))
     {
         int inpanel, ishovered;
         struct nk_window *iter = win;

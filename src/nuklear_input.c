@@ -42,6 +42,13 @@ nk_input_end(struct nk_context *ctx)
     }
 }
 NK_API void
+nk_input_set_lock(struct nk_context* ctx, int lock)
+{
+    NK_ASSERT(ctx);
+    if (!ctx) return;
+    ctx->input_lock = lock;
+}
+NK_API void
 nk_input_motion(struct nk_context *ctx, int x, int y)
 {
     struct nk_input *in;

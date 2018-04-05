@@ -904,6 +904,21 @@ NK_API void nk_input_unicode(struct nk_context*, nk_rune);
 /// __ctx__     | Must point to a previously initialized `nk_context` struct
 */
 NK_API void nk_input_end(struct nk_context*);
+/*/// #### nk_input_set_lock
+/// Sets the input lock. If the input lock is set, all windows will be
+/// treated as if they have NK_WINDOW_NO_INPUT set, and more generally,
+/// the mouse will be treated as if it is over no windows. ///
+///
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
+/// void nk_input_set_lock(struct nk_context *ctx, int lock);
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+///
+/// Parameter   | Description
+/// ------------|-----------------------------------------------------------
+/// __ctx__     | Must point to a previously initialized `nk_context` struct
+/// __lock__    | The new state of the input lock: 0 for unlocked, 1 for locked
+*/
+NK_API void nk_input_set_lock(struct nk_context*, int lock);
 /* =============================================================================
  *
  *                                  DRAWING
@@ -5485,6 +5500,9 @@ struct nk_context {
 #ifdef NK_INCLUDE_COMMAND_USERDATA
     nk_handle userdata;
 #endif
+
+    int input_lock;
+
     /* text editor objects are quite big because of an internal
      * undo/redo stack. Therefore it does not make sense to have one for
      * each window for temporary use cases, so I only provide *one* instance
@@ -13855,6 +13873,13 @@ nk_input_end(struct nk_context *ctx)
     }
 }
 NK_API void
+nk_input_set_lock(struct nk_context* ctx, int lock)
+{
+    NK_ASSERT(ctx);
+    if (!ctx) return;
+    ctx->input_lock = lock;
+}
+NK_API void
 nk_input_motion(struct nk_context *ctx, int x, int y)
 {
     struct nk_input *in;
@@ -15507,7 +15532,7 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
     win = ctx->current;
     layout = win->layout;
     out = &win->buffer;
-    in = (win->flags & NK_WINDOW_NO_INPUT) ? 0: &ctx->input;
+    in = (win->flags & NK_WINDOW_NO_INPUT || ctx->input_lock != 0) ? 0: &ctx->input;
 #ifdef NK_INCLUDE_COMMAND_USERDATA
     win->buffer.userdata = ctx->userdata;
 #endif
@@ -15721,7 +15746,7 @@ nk_panel_end(struct nk_context *ctx)
     layout = window->layout;
     style = &ctx->style;
     out = &window->buffer;
-    in = (layout->flags & NK_WINDOW_ROM || layout->flags & NK_WINDOW_NO_INPUT) ? 0 :&ctx->input;
+    in = (layout->flags & NK_WINDOW_ROM || layout->flags & NK_WINDOW_NO_INPUT || ctx->input_lock != 0) ? 0 :&ctx->input;
     if (!nk_panel_is_sub(layout->type))
         nk_push_scissor(out, nk_null_rect);
 
@@ -16207,7 +16232,7 @@ nk_begin_titled(struct nk_context *ctx, const char *name, const char *title,
     } else nk_start(ctx, win);
 
     /* window overlapping */
-    if (!(win->flags & NK_WINDOW_HIDDEN) && !(win->flags & NK_WINDOW_NO_INPUT))
+    if (!(win->flags & NK_WINDOW_HIDDEN) && !(win->flags & NK_WINDOW_NO_INPUT) && (ctx->input_lock == 0))
     {
         int inpanel, ishovered;
         struct nk_window *iter = win;
